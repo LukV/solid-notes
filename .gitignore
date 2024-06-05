@@ -1,5 +1,5 @@
 # .gitignore
-.vscode
+.vscode/
 
 # Node modules
 node_modules/
