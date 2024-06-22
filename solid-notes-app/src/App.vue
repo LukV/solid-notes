@@ -4,12 +4,7 @@
       <h1>Solid Notes</h1>
       <nav>
         <ul>
-          <li><a href="#" @click="createNote">Create Note</a></li>
-          <li><a href="#" @click="deleteNote">Delete Note</a></li>
-          <li><a href="#" @click="toggleSidebar">Toggle Sidebar</a></li>
-        </ul>
-        <ul>
-          <li v-for="note in notes" :key="note.id"><a href="#">{{ note.title }}</a></li>
+          <li v-for="(note, index) in noteStore.notes" :key="index"><a href="#">{{ note.title }}</a></li>
         </ul>
       </nav>
     </div>
@@ -21,11 +16,24 @@
 
 <script>
 import Editor from './components/Editor.vue'
+import { useNoteStore } from '@/stores/notesStore'
+import { ref, onMounted } from 'vue'
 
 export default {
   name: 'App',
   components: {
     Editor
+  },
+  setup() {
+    const noteStore = useNoteStore();
+
+    onMounted(() => {
+      noteStore.loadNotes();
+    });
+
+    return {
+      noteStore
+    }
   },
   data() {
     return {

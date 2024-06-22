@@ -1,11 +1,11 @@
 <template>
   <div class="editor-container">
-    <input v-model="title" placeholder="Title" class="title-input" />
+    <input v-model="noteStore.newNote.title" placeholder="Title" class="title-input" />
     <quill-editor 
-      v-model:content="content" 
+      v-model:content="noteStore.newNote.content" 
       contentType="html" 
       :options="editorOptions" />
-    <button @click="submitNote">Submit Note</button>
+    <button @click="addNote">Submit Note</button>
   </div>
 </template>
 
@@ -13,29 +13,31 @@
 import { QuillEditor } from '@vueup/vue-quill'
 import '@vueup/vue-quill/dist/vue-quill.snow.css'
 import axios from 'axios'
-import { useNoteStore } from '@/stores/notesStore';
-import { computed, watch } from 'vue';
+import { useNoteStore } from '@/stores/notesStore'
+import { ref, onMounted } from 'vue'
 
 export default {  
   components: { QuillEditor },
   setup() {
     const noteStore = useNoteStore();
 
-    const title = computed({
-      get: () => noteStore.title,
-      set: (value) => noteStore.updateTitle(value),
+    onMounted(() => {
+      noteStore.loadNotes();
     });
 
-    const content = computed({
-      get: () => noteStore.content,
-      set: (value) => noteStore.updateContent(value),
-    });
+    const addNote = () => {
+      noteStore.addNote();
+    }
+
+    const deleteNote = (index) => {
+      noteStore.deleteNote(index);
+    }
 
     return {
       noteStore,
-      title,
-      content,
-    };
+      addNote,
+      deleteNote
+    }
   },
   data() {
     return {
