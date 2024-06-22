@@ -1,11 +1,11 @@
 <template>
   <div class="editor-container">
-    <input v-model="noteStore.newNote.title" placeholder="Title" class="title-input" />
+    <input v-model="noteStore.currentNote.title" placeholder="Title" class="title-input" />
     <quill-editor 
-      v-model:content="noteStore.newNote.content" 
+      v-model:content="noteStore.currentNote.content" 
       contentType="html" 
       :options="editorOptions" />
-    <button @click="addNote">Submit Note</button>
+    <button @click="submitNote">Submit Note</button>
   </div>
 </template>
 
@@ -14,29 +14,14 @@ import { QuillEditor } from '@vueup/vue-quill'
 import '@vueup/vue-quill/dist/vue-quill.snow.css'
 import axios from 'axios'
 import { useNoteStore } from '@/stores/notesStore'
-import { ref, onMounted } from 'vue'
 
 export default {  
   components: { QuillEditor },
   setup() {
     const noteStore = useNoteStore();
 
-    onMounted(() => {
-      noteStore.loadNotes();
-    });
-
-    const addNote = () => {
-      noteStore.addNote();
-    }
-
-    const deleteNote = (index) => {
-      noteStore.deleteNote(index);
-    }
-
     return {
-      noteStore,
-      addNote,
-      deleteNote
+      noteStore
     }
   },
   data() {
@@ -44,10 +29,10 @@ export default {
       editorOptions: {
         modules: {
           toolbar: [
+            [{ header: [1, 2, 3, false] }],
             ['bold', 'italic', 'underline'],
             ['blockquote', 'code-block'],
             [{ list: 'ordered' }, { list: 'bullet' }],
-            [{ header: [1, 2, 3, false] }],
             [{ align: [] }],
             ['link', 'image'],
             ['clean'],
@@ -70,8 +55,8 @@ export default {
     async submitNote() {
       try {
         const response = await axios.post('http://127.0.0.1:8000/notes/', {
-          title: this.title,
-          content: this.content,
+          title: this.noteStore.currentNote.title,
+          content: this.noteStore.currentNote.content,
         });
       } catch (error) {
         console.error('There was an error!', error);
