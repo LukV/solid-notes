@@ -13,13 +13,32 @@
 import { QuillEditor } from '@vueup/vue-quill'
 import '@vueup/vue-quill/dist/vue-quill.snow.css'
 import axios from 'axios'
+import { useNoteStore } from '@/stores/notesStore';
+import { computed, watch } from 'vue';
 
-export default {
+export default {  
   components: { QuillEditor },
+  setup() {
+    const noteStore = useNoteStore();
+
+    const title = computed({
+      get: () => noteStore.title,
+      set: (value) => noteStore.updateTitle(value),
+    });
+
+    const content = computed({
+      get: () => noteStore.content,
+      set: (value) => noteStore.updateContent(value),
+    });
+
+    return {
+      noteStore,
+      title,
+      content,
+    };
+  },
   data() {
     return {
-      title: '',
-      content: '',
       editorOptions: {
         modules: {
           toolbar: [
@@ -46,19 +65,14 @@ export default {
     }
   },
   methods: {
-    getContent() {
-      return this.content;
-    },
     async submitNote() {
-      console.log(this.title, this.content);
       try {
         const response = await axios.post('http://127.0.0.1:8000/notes/', {
           title: this.title,
           content: this.content,
-        })
-        console.log(response.data)
+        });
       } catch (error) {
-        console.error('There was an error!', error)
+        console.error('There was an error!', error);
       }
     }
   },
@@ -87,7 +101,7 @@ export default {
 .ql-toolbar.ql-snow {
   border: none;
   display: flex;
-  justify-content: center; /* Center align the toolbar */
+  /* justify-content: center; Center align the toolbar */
 }
 
 .ql-editor {
@@ -101,7 +115,7 @@ export default {
   border: none; /* Remove border */
   outline: none; /* Remove outline */
   width: 100%; /* Full width */
-  margin: 25px 0px; /* Margin at the bottom */
-  text-align: center; /* Center align text */
+  margin: 20px 15px; /* Margin at the bottom */
+  /* text-align: center; Center align text */
 }
 </style>
