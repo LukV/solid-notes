@@ -5,6 +5,7 @@ export const useNoteStore = defineStore('note', () => {
   const notes = ref(JSON.parse(localStorage.getItem('notes')) || []);
   const currentNoteIndex = ref(-1);
   const currentNote = ref(createNewNote());
+  const noteAdded = ref(false); // Flag to track if the note has been added
 
   function createNewNote() {
     return {
@@ -15,9 +16,11 @@ export const useNoteStore = defineStore('note', () => {
   }
 
   const addNote = () => {
+    if (!currentNote.value.title.trim()) return; // Only add note if title is not empty
     const newNote = createNewNote();
     notes.value.push(newNote);
     setCurrentNote(notes.value.length - 1);
+    noteAdded.value = true; // Set the flag when the note is added
   };
 
   const updateNote = (index, updatedNote) => {
@@ -27,23 +30,32 @@ export const useNoteStore = defineStore('note', () => {
   const deleteNote = (index) => {
     notes.value.splice(index, 1);
     if (currentNoteIndex.value === index) {
-      currentNote.value = createNewNote();
-      currentNoteIndex.value = -1;
+      resetCurrentNote();
     } else if (currentNoteIndex.value > index) {
       currentNoteIndex.value--;
     }
+  };
+
+  const resetCurrentNote = () => {
+    currentNote.value = createNewNote();
+    currentNoteIndex.value = -1;
+    noteAdded.value = false; // Reset the flag
   };
 
   const loadNotes = () => {
     const savedNotes = localStorage.getItem('notes');
     if (savedNotes) {
       notes.value = JSON.parse(savedNotes);
-    } 
+    } else {
+      localStorage.setItem('notes', JSON.stringify([]));
+      addNote();
+    }
   };
 
   const setCurrentNote = (index) => {
     currentNote.value = notes.value[index];
     currentNoteIndex.value = index;
+    noteAdded.value = true; // Set the flag when an existing note is set
   };
 
   watch(
@@ -65,6 +77,15 @@ export const useNoteStore = defineStore('note', () => {
     { deep: true }
   );
 
+  watch(
+    () => currentNote.value.title,
+    (newTitle, oldTitle) => {
+      if (!oldTitle && newTitle && !noteAdded.value) {
+        addNote();
+      }
+    }
+  );
+
   return {
     notes,
     currentNote,
@@ -73,6 +94,7 @@ export const useNoteStore = defineStore('note', () => {
     updateNote,
     deleteNote,
     loadNotes,
-    setCurrentNote
+    setCurrentNote,
+    resetCurrentNote
   };
 });
