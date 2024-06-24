@@ -1,13 +1,20 @@
 <template>
   <div id="canvas">
     <div :class="['sidebar', { open: isSidebarOpen }]">
+      <div class="navbar">
+        <button @click="toggleSidebar" class="toggle-sidebar-button">
+          <span class="material-icons-outlined">view_sidebar</span>
+        </button>
+        <button @click="addNote" class="new-note-button">
+          <span class="material-icons-outlined">edit</span>
+        </button>
+      </div>
       <h1>Solid Notes</h1>
-      <button @click="addNote" class="new-note-button">Add note</button>
       <hr class="divider">
       <nav>
         <ul>
           <li v-for="(note, index) in noteStore.notes" :key="index">
-            <a href="#" @click.prevent="setCurrentNote(index)">{{ note.title }}</a> 
+            <a href="#" @click.prevent="setCurrentNote(index)">{{ note.title }}</a>
             <a href="#" @click.prevent="deleteNote(index)">[x]</a>
           </li>
         </ul>
@@ -69,27 +76,37 @@ export default {
 </script>
 
 <style>
+@import url('https://fonts.googleapis.com/icon?family=Material+Icons+Outlined');
+
 #canvas {
   display: flex;
   height: 100vh;
 }
 
-.new-note-button {
-  display: block;
-  width: 100%;
-  padding: 10px 15px;
-  font-size: 16px;
-  color: #fff;
-  background-color: #007bff;
-  border: none;
-  border-radius: 4px;
-  text-align: center;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
 }
 
+.toggle-sidebar-button,
+.new-note-button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 24px;
+  color: #666;
+  transition: color 0.3s ease;
+}
+
+.toggle-sidebar-button:hover,
 .new-note-button:hover {
-  background-color: #0056b3;
+  color: #007bff;
+}
+
+.material-icons {
+  font-size: 24px;
 }
 
 .divider {
@@ -104,6 +121,7 @@ export default {
   background-color: #f4f4f4;
   padding: 20px;
   transition: transform 0.3s ease;
+  transform: translateX(-250px);
 }
 
 .sidebar.open {
