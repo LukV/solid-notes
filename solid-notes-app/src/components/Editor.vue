@@ -1,27 +1,42 @@
 <template>
   <div class="editor-container">
-    <input v-model="noteStore.currentNote.title" placeholder="Title" class="title-input" />
+    <input 
+      v-model="noteStore.currentNote.title" 
+      placeholder="Title" 
+      class="title-input"
+      @blur="submitNote"
+    />
     <quill-editor 
       v-model:content="noteStore.currentNote.content" 
       contentType="html" 
       :options="editorOptions" />
-    <button @click="submitNote">Submit Note</button>
   </div>
 </template>
 
 <script>
 import { QuillEditor } from '@vueup/vue-quill'
 import '@vueup/vue-quill/dist/vue-quill.snow.css'
-import axios from 'axios'
 import { useNoteStore } from '@/stores/notesStore'
+import { watch } from 'vue';
 
 export default {  
   components: { QuillEditor },
   setup() {
     const noteStore = useNoteStore();
 
+    watch(() => noteStore.currentNote, () => {
+      noteStore.saveNotes(); // Save notes whenever the current note is modified
+    }, { deep: true });
+
+    const submitNote = () => {
+      if (noteStore.currentNote.title.trim()) {
+        noteStore.submitNote();
+      }
+    };
+
     return {
-      noteStore
+      noteStore,
+      submitNote
     }
   },
   data() {
@@ -51,18 +66,6 @@ export default {
       },
     }
   },
-  methods: {
-    async submitNote() {
-      try {
-        const response = await axios.post('http://127.0.0.1:8000/notes/', {
-          title: this.noteStore.currentNote.title,
-          content: this.noteStore.currentNote.content,
-        });
-      } catch (error) {
-        console.error('There was an error!', error);
-      }
-    }
-  },
 }
 </script>
 
@@ -79,7 +82,6 @@ export default {
   flex-direction: column;
 }
 
-
 /* Custom styles to remove borders */
 .ql-container.ql-snow {
   border: none;
@@ -88,7 +90,6 @@ export default {
 .ql-toolbar.ql-snow {
   border: none;
   display: flex;
-  /* justify-content: center; Center align the toolbar */
 }
 
 .ql-editor {
@@ -103,6 +104,5 @@ export default {
   outline: none; /* Remove outline */
   width: 100%; /* Full width */
   margin: 20px 15px; /* Margin at the bottom */
-  /* text-align: center; Center align text */
 }
 </style>
