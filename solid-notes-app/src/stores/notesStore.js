@@ -1,5 +1,3 @@
-// stores/notesStore.js
-
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
 
@@ -10,6 +8,7 @@ export const useNoteStore = defineStore('noteStore', () => {
   const loadNotes = () => {
     const savedNotes = localStorage.getItem('notes');
     notes.value = savedNotes ? JSON.parse(savedNotes) : [];
+    sessionStorage.setItem('isNewNote', 'true');
   };
 
   const saveNotes = () => {
@@ -18,6 +17,7 @@ export const useNoteStore = defineStore('noteStore', () => {
 
   const addNote = () => {
     currentNote.value = { title: '', content: '<br>' };
+    sessionStorage.setItem('isNewNote', 'true');
   };
 
   const submitNote = () => {
@@ -25,16 +25,19 @@ export const useNoteStore = defineStore('noteStore', () => {
     notes.value.push(newNote);
     setCurrentNote(notes.value.length - 1);
     saveNotes();
+    sessionStorage.setItem('isNewNote', 'false');
   };
 
   const deleteNote = (index) => {
     notes.value.splice(index, 1);
     currentNote.value = { title: '', content: '<br>' };
     saveNotes();
+    sessionStorage.setItem('isNewNote', 'true');
   };
 
   const setCurrentNote = (index) => {
     currentNote.value = notes.value[index];
+    sessionStorage.setItem('isNewNote', 'false');
   };
 
   return {
