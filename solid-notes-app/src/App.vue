@@ -39,6 +39,11 @@
         </span>
         <span id="toolbar-container">
           <span class="ql-formats">
+            <select className="ql-header" defaultValue="3">
+              <option value="1">Heading</option>
+              <option value="2">Subheading</option>
+              <option value="3">Normal</option>
+            </select>
             <button class="ql-bold"></button>
             <button class="ql-italic"></button>
             <button class="ql-list" value="ordered"></button>
