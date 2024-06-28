@@ -64,9 +64,6 @@
               @blur="checkAndSubmitNote"
               @submit="checkAndSubmitNote"
             />
-            <button v-if="isNewNote" @click="checkAndSubmitNote" class="submit-note-button">
-              <span class="material-icons-outlined">check</span>
-            </button>
         </div>  
       </div>
       <div class="main-content">
@@ -124,7 +121,6 @@ export default {
   },
   data() {
     return {
-      isNewNote: sessionStorage.getItem('isNewNote') === 'true',
       isSidebarOpen: true,
       editorOptions: {
         modules: {
@@ -172,11 +168,21 @@ export default {
 <style>
 @import url('https://fonts.googleapis.com/icon?family=Material+Icons+Outlined');
 
+:root {
+  color-scheme: only light;
+}
+
+body { 
+   background-image: linear-gradient(#ffffff, #ffffff); 
+   background-color: #ffffff;
+}
+
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
     line-height: 1.4;
+    color: #222;
     font-size: 14px;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
 }
