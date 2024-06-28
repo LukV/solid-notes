@@ -51,14 +51,22 @@
         </span>
         <span>...</span>
       </header>
-      <div class="main-content">
+      <div class="title-block">
         <div class="content-block">
           <input 
-            v-model="noteStore.currentNote.title" 
-            placeholder="Title" 
-            class="title-input"
-            @blur="checkAndSubmitNote"
-          />
+              v-model="noteStore.currentNote.title" 
+              placeholder="Title" 
+              class="title-input"
+              @blur="checkAndSubmitNote"
+              @submit="checkAndSubmitNote"
+            />
+            <button v-if="isNewNote" @click="checkAndSubmitNote" class="submit-note-button">
+              <span class="material-icons-outlined">check</span>
+            </button>
+        </div>  
+      </div>
+      <div class="main-content">
+        <div class="content-block">
           <quill-editor 
             ref="quillEditor"
             v-model:content="noteStore.currentNote.content" 
@@ -112,6 +120,7 @@ export default {
   },
   data() {
     return {
+      isNewNote: sessionStorage.getItem('isNewNote') === 'true',
       isSidebarOpen: true,
       editorOptions: {
         modules: {
@@ -163,6 +172,7 @@ export default {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
+    line-height: 1.4;
     font-size: 14px;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
 }
@@ -332,9 +342,15 @@ body, html {
 .main-content {
     display: flex;
     justify-content: center;
-    padding: 20px;
     overflow-y: auto; /* Ensure scrollbar applies only to the main content */
     flex: 1; /* Ensure main-content takes available space */
+}
+
+.title-block {
+    display: flex;
+    justify-content: center;
+    padding: 15px 20px;
+    border-bottom: 1px solid #efefef;
 }
 
 .content-block {
@@ -363,6 +379,6 @@ body, html {
   border: none; /* Remove border */
   outline: none; /* Remove outline */
   width: 100%; /* Full width */
-  margin: 0px 0px 10px 15px;
+  margin-left: 15px;
 }
 </style>
