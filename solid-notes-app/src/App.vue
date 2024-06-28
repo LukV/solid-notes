@@ -13,9 +13,12 @@
         <h1>Solid Notes</h1>
         <nav>
           <ul>
-            <li v-for="(note, index) in noteStore.notes" :key="index">
+            <li v-for="(note, index) in noteStore.notes" :key="index" class="note-item">
               <a href="#" @click.prevent="setCurrentNote(index)">{{ note.title }}</a>
-              <a href="#" @click.prevent="deleteNote(index)">[x]</a>
+              <span class="material-icons-outlined more-options" @click.prevent="toggleContextMenu(index)">more_vert</span>
+              <div v-if="contextMenuVisible && currentContextIndex === index" class="context-menu">
+                <a href="#" @click.prevent="deleteNote(index)">Delete</a>
+              </div>
             </li>
           </ul>
         </nav>
@@ -35,20 +38,15 @@
           {{noteStore.currentNote.title}}
         </span>
         <span id="toolbar-container">
-          <span className="ql-formats">
-            <select className="ql-header" defaultValue="3">
-              <option value="1">Heading</option>
-              <option value="2">Subheading</option>
-              <option value="3">Normal</option>
-            </select>
-            <button className="ql-bold" />
-            <button className="ql-italic" />
-            <button className="ql-underline" />
-            <button className="ql-list" value="ordered" />
-            <button className="ql-list" value="bullet" />
-            <button className="ql-link" />
-            <button className="ql-image" />
-            <button className="ql-code-block" />
+          <span class="ql-formats">
+            <button class="ql-bold"></button>
+            <button class="ql-italic"></button>
+            <button class="ql-underline"></button>
+            <button class="ql-list" value="ordered"></button>
+            <button class="ql-list" value="bullet"></button>
+            <button class="ql-link"></button>
+            <button class="ql-image"></button>
+            <button class="ql-code-block"></button>
           </span>
         </span>
         <span>...</span>
@@ -62,9 +60,11 @@
             @blur="checkAndSubmitNote"
           />
           <quill-editor 
+            ref="quillEditor"
             v-model:content="noteStore.currentNote.content" 
             contentType="html" 
-            :options="editorOptions" />
+            :options="editorOptions" 
+          />
         </div>
       </div>
     </main>
@@ -74,7 +74,7 @@
 <script>
 import { QuillEditor } from '@vueup/vue-quill'
 import { useNoteStore } from '@/stores/notesStore'
-import { watch, onMounted } from 'vue'
+import { watch, onMounted, nextTick, ref } from 'vue'
 import '@vueup/vue-quill/dist/vue-quill.bubble.css';
 import '@vueup/vue-quill/dist/vue-quill.snow.css'
 
@@ -85,39 +85,29 @@ export default {
   },
   setup() {
     const noteStore = useNoteStore();
+    const contextMenuVisible = ref(false);
+    const currentContextIndex = ref(null);
 
     onMounted(() => {
       noteStore.loadNotes();
+      document.querySelector('.title-input').focus();
+      
+      document.addEventListener('click', (event) => {
+        if (!event.target.closest('.context-menu') && !event.target.closest('.more-options')) {
+          contextMenuVisible.value = false;
+          currentContextIndex.value = null;
+        }
+      });
     });
-
-    const addNote = () => {
-      noteStore.addNote();
-    }
-
-    const deleteNote = (index) => {
-      noteStore.deleteNote(index);
-    }
-
-    const setCurrentNote = (index) => {
-      noteStore.setCurrentNote(index);
-    }
-
-    const checkAndSubmitNote = () => {
-      if (sessionStorage.getItem('isNewNote') === 'true' && noteStore.currentNote.title.trim()) {
-        noteStore.submitNote();
-      }
-    };
 
     watch(() => noteStore.currentNote, () => {
       noteStore.saveNotes(); // Save notes whenever the current note is modified
     }, { deep: true });
-    
+
     return {
       noteStore,
-      addNote,
-      deleteNote,
-      setCurrentNote,
-      checkAndSubmitNote
+      contextMenuVisible,
+      currentContextIndex
     }
   },
   data() {
@@ -128,16 +118,43 @@ export default {
           toolbar: '#toolbar-container'
         },
         theme: 'snow',
-      },
+      }
     }
   },
   methods: {
     toggleSidebar() {
       this.isSidebarOpen = !this.isSidebarOpen;
+    },
+    addNote() {
+      this.noteStore.addNote();
+      document.querySelector('.title-input').focus();
+    },
+    deleteNote(index) {
+      this.noteStore.deleteNote(index);
+      this.contextMenuVisible = false;
+    },
+    setCurrentNote(index) {
+      this.noteStore.setCurrentNote(index);
+    },
+    toggleContextMenu(index) {
+      if (this.contextMenuVisible && this.currentContextIndex === index) {
+        this.contextMenuVisible = false;
+        this.currentContextIndex = null;
+      } else {
+        this.contextMenuVisible = true;
+        this.currentContextIndex = index;
+      }
+    },
+    checkAndSubmitNote() {
+      if (sessionStorage.getItem('isNewNote') === 'true' && this.noteStore.currentNote.title.trim()) {
+        this.noteStore.submitNote();
+      }
     }
   }
 }
 </script>
+
+
 
 <style>
 @import url('https://fonts.googleapis.com/icon?family=Material+Icons+Outlined');
@@ -146,6 +163,8 @@ export default {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
+    font-size: 14px;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
 }
 
 body, html {
@@ -167,7 +186,7 @@ body, html {
 .sidebar {
     width: 300px;
     overflow-y: auto;
-    background-color: #f8f8f8;
+    background: linear-gradient(to bottom, #f5f5f5, #f5f5f5, #ece2e4);
     transition: transform 0.3s ease;
     transform: translateX(0);
     position: absolute;
@@ -222,7 +241,6 @@ body, html {
     background: none;
     border: none;
     cursor: pointer;
-    font-size: 24px;
     color: #666;
     transition: color 0.3s ease;
 }
@@ -237,22 +255,63 @@ body, html {
 }
 
 .sidebar-content {
-    padding: 15px;
+    padding: 10px;
     overflow-y: auto; /* Ensure scrollbar applies only to the sidebar content */
     flex: 1; /* Ensure sidebar-content takes available space */
 }
 
-.sidebar-content h2 {
-    margin-bottom: 10px;
+.sidebar-content h1 {
+    margin: 10px;
 }
 
 .sidebar-content nav ul {
     list-style: none;
 }
 
-.sidebar-content nav ul li {
-    padding: 10px 0;
-    border-bottom: 1px solid #eee;
+.note-item {
+  position: relative;
+  padding: 5px 25px 5px 10px;
+  border-radius: 8px;
+  transition: background-color 0.2s ease;
+}
+
+.note-item:hover {
+  background-color: #e0e0e0;
+}
+
+.note-item .more-options {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  cursor: pointer;
+  display: none;
+}
+
+.note-item:hover .more-options {
+  display: block;
+}
+
+.context-menu {
+  position: absolute;
+  right: 10px;
+  top: 20px;
+  background: white;
+  border: 1px solid #ccc;
+  box-shadow: 0px 2px 10px rgba(0, 0, 0, 0.1);
+  border-radius: 5px;
+  z-index: 1000;
+}
+
+.context-menu a {
+  display: block;
+  padding: 5px 10px;
+  text-decoration: none;
+  color: black;
+}
+
+.context-menu a:hover {
+  background-color: #f0f0f0;
 }
 
 .main-header .top-buttons {
@@ -293,25 +352,6 @@ body, html {
   display: flex;
 }
 
-/* .quill-editor {
-    flex-grow: 1;
-    display: flex;
-    flex-direction: column;
-    max-width: 800px;
-    width: 100%;
-    box-sizing: border-box;
-}
-
-.quill-editor-content {
-    width: 100%;
-    padding-top: 50px;
-}
-
-.ql-editor {
-  border: none;
-  outline: none;
-} */
-
 #toolbar-container {
   /* Add your custom styles here */
   margin: 0px 10px;
@@ -326,4 +366,3 @@ body, html {
   margin: 0px 0px 10px 15px;
 }
 </style>
-
