@@ -41,7 +41,6 @@
           <span class="ql-formats">
             <button class="ql-bold"></button>
             <button class="ql-italic"></button>
-            <button class="ql-underline"></button>
             <button class="ql-list" value="ordered"></button>
             <button class="ql-list" value="bullet"></button>
             <button class="ql-link"></button>
@@ -179,6 +178,14 @@ export default {
 
 body, html {
     height: 100%;
+}
+
+strong {
+  font-weight: bold !important;
+}
+
+strong em {
+  font-weight: inherit !important;
 }
 
 #canvas {
@@ -349,7 +356,7 @@ body, html {
 .title-block {
     display: flex;
     justify-content: center;
-    padding: 15px 20px;
+    padding: 15px 0px;
     border-bottom: 1px solid #efefef;
 }
 
@@ -379,6 +386,6 @@ body, html {
   border: none; /* Remove border */
   outline: none; /* Remove outline */
   width: 100%; /* Full width */
-  margin-left: 15px;
+  padding-left:15px;
 }
 </style>
