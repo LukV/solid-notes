@@ -1,28 +1,8 @@
 <template>
   <div id="canvas">
     <aside :class="['sidebar', { open: isSidebarOpen }]">
-      <div class="sidebar-header">
-        <button @click="toggleSidebar" class="toggle-sidebar-button">
-          <span class="material-icons-outlined">view_sidebar</span>
-        </button>
-        <button @click="addNote" class="new-note-button">
-          <span class="material-icons-outlined">edit</span>
-        </button>
-      </div>
-      <div class="sidebar-content">
-        <h1>Solid Notes</h1>
-        <nav>
-          <ul>
-            <li v-for="(note, index) in noteStore.notes" :key="index" class="note-item">
-              <a href="#" @click.prevent="setCurrentNote(index)">{{ note.title }}</a>
-              <span class="material-icons-outlined more-options" @click.prevent="toggleContextMenu(index)">more_vert</span>
-              <div v-if="contextMenuVisible && currentContextIndex === index" class="context-menu">
-                <a href="#" @click.prevent="deleteNote(index)">Delete</a>
-              </div>
-            </li>
-          </ul>
-        </nav>
-      </div>
+      <SidebarHeader @toggle-sidebar="toggleSidebar" @add-note="addNote" />
+      <SidebarContent />
     </aside>
     <main class="main-section" :class="{ expanded: !isSidebarOpen }">
       <header class="main-header">
@@ -83,6 +63,8 @@
 <script>
 import { QuillEditor } from '@vueup/vue-quill'
 import { useNoteStore } from '@/stores/notesStore'
+import SidebarHeader from '@/components/SidebarHeader.vue'
+import SidebarContent from '@/components/SidebarContent.vue'
 import { watch, onMounted, nextTick, ref } from 'vue'
 import '@vueup/vue-quill/dist/vue-quill.bubble.css';
 import '@vueup/vue-quill/dist/vue-quill.snow.css'
@@ -90,23 +72,17 @@ import '@vueup/vue-quill/dist/vue-quill.snow.css'
 export default {
   name: 'App',
   components: {
-    QuillEditor
+    QuillEditor,
+    SidebarHeader,
+    SidebarContent
   },
   setup() {
     const noteStore = useNoteStore();
-    const contextMenuVisible = ref(false);
-    const currentContextIndex = ref(null);
 
     onMounted(() => {
       noteStore.loadNotes();
       document.querySelector('.title-input').focus();
-      
-      document.addEventListener('click', (event) => {
-        if (!event.target.closest('.context-menu') && !event.target.closest('.more-options')) {
-          contextMenuVisible.value = false;
-          currentContextIndex.value = null;
-        }
-      });
+
     });
 
     watch(() => noteStore.currentNote, () => {
@@ -114,9 +90,7 @@ export default {
     }, { deep: true });
 
     return {
-      noteStore,
-      contextMenuVisible,
-      currentContextIndex
+      noteStore
     }
   },
   data() {
@@ -137,22 +111,6 @@ export default {
     addNote() {
       this.noteStore.addNote();
       document.querySelector('.title-input').focus();
-    },
-    deleteNote(index) {
-      this.noteStore.deleteNote(index);
-      this.contextMenuVisible = false;
-    },
-    setCurrentNote(index) {
-      this.noteStore.setCurrentNote(index);
-    },
-    toggleContextMenu(index) {
-      if (this.contextMenuVisible && this.currentContextIndex === index) {
-        this.contextMenuVisible = false;
-        this.currentContextIndex = null;
-      } else {
-        this.contextMenuVisible = true;
-        this.currentContextIndex = index;
-      }
     },
     checkAndSubmitNote() {
       if (sessionStorage.getItem('isNewNote') === 'true' && this.noteStore.currentNote.title.trim()) {
@@ -182,7 +140,6 @@ body {
     padding: 0;
     box-sizing: border-box;
     line-height: 1.4;
-    color: #222;
     font-size: 14px;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
 }
@@ -252,7 +209,7 @@ strong em {
     width: 100%; /* Expand to full width when sidebar is closed */
 }
 
-.sidebar-header, .main-header {
+.main-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -262,84 +219,6 @@ strong em {
     top: 0;
     z-index: 1;
     border-bottom: 1px solid #efefef;
-}
-
-.toggle-sidebar-button,
-.new-note-button {
-    background: none;
-    border: none;
-    cursor: pointer;
-    color: #666;
-    transition: color 0.3s ease;
-}
-
-.toggle-sidebar-button:hover,
-.new-note-button:hover {
-    color: #007bff;
-}
-
-.sidebar-header button:last-child {
-    margin-right: 0;
-}
-
-.sidebar-content {
-    padding: 10px;
-    overflow-y: auto; /* Ensure scrollbar applies only to the sidebar content */
-    flex: 1; /* Ensure sidebar-content takes available space */
-}
-
-.sidebar-content h1 {
-    margin: 10px;
-}
-
-.sidebar-content nav ul {
-    list-style: none;
-}
-
-.note-item {
-  position: relative;
-  padding: 5px 25px 5px 10px;
-  border-radius: 8px;
-  transition: background-color 0.2s ease;
-}
-
-.note-item:hover {
-  background-color: #e0e0e0;
-}
-
-.note-item .more-options {
-  position: absolute;
-  right: 10px;
-  top: 50%;
-  transform: translateY(-50%);
-  cursor: pointer;
-  display: none;
-}
-
-.note-item:hover .more-options {
-  display: block;
-}
-
-.context-menu {
-  position: absolute;
-  right: 10px;
-  top: 20px;
-  background: white;
-  border: 1px solid #ccc;
-  box-shadow: 0px 2px 10px rgba(0, 0, 0, 0.1);
-  border-radius: 5px;
-  z-index: 1000;
-}
-
-.context-menu a {
-  display: block;
-  padding: 5px 10px;
-  text-decoration: none;
-  color: black;
-}
-
-.context-menu a:hover {
-  background-color: #f0f0f0;
 }
 
 .main-header .top-buttons {
