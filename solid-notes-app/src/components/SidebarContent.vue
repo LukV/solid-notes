@@ -3,11 +3,11 @@
         <h1>Solid Notes</h1>
         <nav>
             <ul>
-                <li v-for="(note, index) in noteStore.notes" :key="index" class="note-item">
-                    <a href="#" @click.prevent="setCurrentNote(index)">{{ note.title }}</a>
+                <li v-for="(note, index) in noteStore.notes" :key="index" class="note-item" @click.prevent="setCurrentNote(index)">
+                    <span class="note-title">{{ truncateTitle(note.title) }}</span>
                     <span class="material-icons-outlined more-options"
-                        @click.prevent="toggleContextMenu(index)">more_vert</span>
-                    <div v-if="contextMenuVisible && currentContextIndex === index" class="context-menu">
+                        @click.prevent.stop="toggleContextMenu(index)">more_vert</span>
+                    <div v-if="contextMenuVisible && currentContextIndex === index" class="context-menu" @click.stop>
                         <a href="#" @click.prevent="deleteNote(index)">Delete</a>
                     </div>
                 </li>
@@ -22,9 +22,6 @@ import { useNoteStore } from '@/stores/notesStore'
 
 export default {
     name: 'SidebarContent',
-    props: {
-        setCurrentNote: Function,
-    },
     setup() {
         const contextMenuVisible = ref(false);
         const currentContextIndex = ref(null);
@@ -62,26 +59,37 @@ export default {
         setCurrentNote(index) {
             this.noteStore.setCurrentNote(index);
         },
+        truncateTitle(title) {
+            if (title.length > 25) {
+                return title.substring(0, 30) + '...';
+            } else {
+                return title;
+            }
+        }
     }
 }
 </script>
 
 <style scoped>
-/* Include the necessary styles here */
 .sidebar-content {
     padding: 10px;
     overflow-y: auto;
-    /* Ensure scrollbar applies only to the sidebar content */
     flex: 1;
-    /* Ensure sidebar-content takes available space */
-}
-
-.sidebar-content h1 {
-    margin: 10px;
 }
 
 .sidebar-content nav ul {
     list-style: none;
+}
+
+.sidebar h1 {
+    margin: 10px;
+    font-size: 24px;
+    margin-bottom: 20px;
+}
+
+.sidebar nav ul li a {
+    text-decoration: none;
+    color: #333;
 }
 
 .note-item {
@@ -89,6 +97,7 @@ export default {
     padding: 5px 25px 5px 10px;
     border-radius: 8px;
     transition: background-color 0.2s ease;
+    cursor: pointer;
 }
 
 .note-item:hover {
@@ -106,6 +115,15 @@ export default {
 
 .note-item:hover .more-options {
     display: block;
+}
+
+.note-title {
+    display: inline-block;
+    max-width: 250px; /* Adjust as needed */
+    white-space: nowrap;
+    overflow: hidden;
+    position: relative;
+    vertical-align: middle;
 }
 
 .context-menu {
@@ -130,3 +148,4 @@ export default {
     background-color: #f0f0f0;
 }
 </style>
+
