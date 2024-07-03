@@ -1,6 +1,5 @@
 """
-Main module in `solid_integration` to run 
-auth and management of solid pods locally.
+Main module in to run auth and management of solid pods locally.
 """
 import asyncio
 import os
@@ -8,13 +7,8 @@ from dotenv import load_dotenv
 from auth import SolidAccountClient  # pylint: disable=E0401
 from notes import SolidNoteClient  # pylint: disable=E0401
 
-# Print current working directory for debugging
-print(f"Current working directory: {os.getcwd()}")
-
 # Load environment variables from .env file
-dotenv_path = os.path.join(os.path.dirname(__file__), '../../.env')
-print(f"Loading .env from: {dotenv_path}")
-load_dotenv(dotenv_path=dotenv_path)
+load_dotenv(dotenv_path=os.path.join(os.path.dirname(__file__), '../../.env'))
 
 async def main():
     """Main function."""
@@ -32,19 +26,24 @@ async def main():
     token_url = 'http://localhost:3000/.oidc/token'
     private_key, public_jwk = account_client.generate_dpop_key_pair()
 
-    access_token, expires_in = await account_client.request_access_token(my_id, secret, token_url, private_key, public_jwk)
+    access_token, expires_in = await account_client. \
+        request_access_token(my_id, secret, token_url, private_key, public_jwk)
     print(f"Access Token: {access_token}")
     print(f"Expires In: {expires_in}")
 
     note_client = SolidNoteClient(solid_pod_url, private_key, public_jwk, container)
 
-    created = await note_client.create_note_in_solid(access_token, "note3", "Sample Title", "Sample Subject", "Sample Content", "2024-07-01")
+    created = await note_client. \
+        create_note_in_solid(access_token, "note3", "Sample Title",
+                             "Sample Subject", "Sample Content", "2024-07-01")
     print(f"Note created: {created}")
 
     notes = await note_client.get_notes_from_solid(access_token)
     print(f"Retrieved notes: {notes}")
 
-    updated = await note_client.update_note_in_solid(access_token, "note2", "Updated Title", "Updated Subject", "Updated Content", "2024-07-02")
+    updated = await note_client. \
+        update_note_in_solid(access_token, "note2", "Updated Title",
+                             "Updated Subject", "Updated Content", "2024-07-02")
     print(f"Note updated: {updated}")
 
     deleted = await note_client.delete_note_in_solid(access_token, "note3")

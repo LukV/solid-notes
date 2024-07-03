@@ -10,7 +10,7 @@ import jwt # pylint: disable=E0401
 import rdflib
 from rdflib import Graph, Literal, RDF, URIRef, Namespace
 from rdflib.namespace import FOAF, DC
-from utils import normalize_htu, PREFERRED_SIGNING_ALG  # pylint: disable=E0401
+from .utils import normalize_htu, PREFERRED_SIGNING_ALG  # pylint: disable=E0401
 
 # Define namespaces
 LDP = Namespace("http://www.w3.org/ns/ldp#")
@@ -25,9 +25,9 @@ class SolidNoteClient:
     SolidNoteClient class to handle note-related interactions with Solid PODs.
     """
 
-    def __init__(self, 
-                 solid_pod_url: str, 
-                 private_key: Any, 
+    def __init__(self,
+                 solid_pod_url: str,
+                 private_key: Any,
                  public_jwk: Dict[str, Any],
                  container: str):
         """
@@ -147,7 +147,7 @@ class SolidNoteClient:
                                 "mtime": mtime,
                                 "size": size
                             }
-                            for s, p, o in graph:
+                            for _, p, o in graph:
                                 if p == DC.title:
                                     note_data["title"] = str(o)
                                 elif p == DC.subject:
@@ -193,7 +193,8 @@ class SolidNoteClient:
             }
             async with aiohttp.ClientSession() as session:
                 async with session.put(note_url, data=data, headers=headers) as response:
-                    return response.status == 201
+                    r = response.status
+                    return response.status in [201, 205]
         except (aiohttp.ClientError, aiohttp.ClientResponseError) as e:
             logging.error("HTTP client error while updating note: %s", e)
         except (rdflib.exceptions.Error, ValueError) as e:
@@ -216,7 +217,7 @@ class SolidNoteClient:
                     'Authorization': f'DPoP {access_token}',
                     'DPoP': dpop_header
                 }) as response:
-                    return response.status == 200
+                    return response.status in [201, 205]
         except (aiohttp.ClientError, aiohttp.ClientResponseError) as e:
             logging.error("HTTP client error while deleting note: %s", e)
         except (rdflib.exceptions.Error, ValueError) as e:
@@ -236,7 +237,7 @@ class SolidNoteClient:
 
         notes_metadata = []
 
-        for subj, pred, obj in graph:
+        for _, pred, obj in graph:
             if pred == LDP.contains:
                 note_url = str(obj)
                 mtime = graph.value(subject=obj, predicate=POSIX.mtime)

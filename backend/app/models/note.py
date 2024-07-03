@@ -18,21 +18,12 @@ class NoteRequest(BaseModel):
     title: str = Field(..., min_length=1, max_length=100)
     content: str = Field(..., min_length=1)
 
+    title: str = Field(..., min_length=1, max_length=100)
+    content: str = Field(..., min_length=1)
+
     @field_validator('title')
     @classmethod
     def title_must_not_be_empty(cls, v):
-        """
-        Validator to ensure the title is not empty or whitespace.
-
-        Args:
-            v (str): The title of the note.
-
-        Returns:
-            str: The validated title.
-
-        Raises:
-            ValueError: If the title is empty or whitespace.
-        """
         if not v.strip():
             raise ValueError('Title must not be empty')
         return v
@@ -40,18 +31,6 @@ class NoteRequest(BaseModel):
     @field_validator('content')
     @classmethod
     def content_must_not_be_empty(cls, v):
-        """
-        Validator to ensure the content is not empty or whitespace.
-
-        Args:
-            v (str): The content of the note.
-
-        Returns:
-            str: The validated content.
-
-        Raises:
-            ValueError: If the content is empty or whitespace.
-        """
         if not v.strip():
             raise ValueError('Content must not be empty')
         return v

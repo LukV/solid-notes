@@ -4,7 +4,7 @@ from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic_settings import BaseSettings
 import logging
-from backend.app.solid_integration.solid_client import SolidClient
+from app.solid_integration.solid_client import SolidClient
 from app.models.note import NoteRequest, NoteUpdateRequest, NoteResponse, NoteListResponse
 
 class Settings(BaseSettings):
@@ -14,6 +14,7 @@ class Settings(BaseSettings):
     solid_community_url: str
     solid_pod_url: str
     solid_account_url: str
+    token_url: str
 
     class Config:
         """ Config class """
@@ -40,9 +41,10 @@ app.add_middleware(
 solid_client = SolidClient(
     settings.solid_username,
     settings.solid_password,
-    settings.solid_community_url,
+    settings.solid_account_url,
     settings.solid_pod_url,
-    settings.solid_account_url
+    settings.token_url,
+    "notes/"  # Assuming notes/ is the container
 )
 
 logging.basicConfig(level=logging.INFO)

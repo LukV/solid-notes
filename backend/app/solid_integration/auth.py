@@ -11,7 +11,7 @@ import aiohttp
 import jwt # pylint: disable=E0401
 from cryptography.hazmat.primitives.asymmetric import ec
 from cryptography.hazmat.primitives.asymmetric.ec import SECP256R1
-from utils import normalize_htu, PREFERRED_SIGNING_ALG  # pylint: disable=E0401
+from .utils import normalize_htu, PREFERRED_SIGNING_ALG
 
 class SolidAccountClient:
     """
