@@ -1,5 +1,3 @@
-import os
-from dotenv import load_dotenv
 from .auth import SolidAccountClient
 from .notes import SolidNoteClient
 
@@ -17,7 +15,7 @@ class SolidClient:
         authorization = await self.account_client.login_to_account()
         my_id, secret, _ = await self.account_client.fetch_client_credential_token(authorization)
         private_key, public_jwk = self.account_client.generate_dpop_key_pair()
-        access_token, expires_in = await self.account_client.request_access_token(my_id, secret, self.token_url, private_key, public_jwk)
+        access_token, _ = await self.account_client.request_access_token(my_id, secret, self.token_url, private_key, public_jwk)
         self.note_client = SolidNoteClient(self.pod_url, private_key, public_jwk, self.container)
         return access_token
 

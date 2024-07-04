@@ -1,11 +1,11 @@
 from datetime import datetime
+import logging
 import ulid
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic_settings import BaseSettings
-import logging
-from app.solid_integration.solid_client import SolidClient
-from app.models.note import NoteRequest, NoteUpdateRequest, NoteResponse, NoteListResponse
+from app.solid_integration.solid_client import SolidClient # pylint: disable=E0401
+from app.models.note import NoteRequest, NoteUpdateRequest, NoteResponse, NoteListResponse # pylint: disable=E0401
 
 class Settings(BaseSettings):
     """ Settings class """

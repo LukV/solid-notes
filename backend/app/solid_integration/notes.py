@@ -10,7 +10,7 @@ import jwt # pylint: disable=E0401
 import rdflib
 from rdflib import Graph, Literal, RDF, URIRef, Namespace
 from rdflib.namespace import FOAF, DC
-from .utils import normalize_htu, PREFERRED_SIGNING_ALG  # pylint: disable=E0401
+from .utils import normalize_htu, PREFERRED_SIGNING_ALG  
 
 # Define namespaces
 LDP = Namespace("http://www.w3.org/ns/ldp#")

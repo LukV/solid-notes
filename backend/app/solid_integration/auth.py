@@ -11,7 +11,7 @@ import aiohttp
 import jwt # pylint: disable=E0401
 from cryptography.hazmat.primitives.asymmetric import ec
 from cryptography.hazmat.primitives.asymmetric.ec import SECP256R1
-from .utils import normalize_htu, PREFERRED_SIGNING_ALG
+from .utils import normalize_htu, PREFERRED_SIGNING_ALG # pylint: disable=E0401
 
 class SolidAccountClient:
     """
@@ -31,6 +31,68 @@ class SolidAccountClient:
         self.solid_account_url = solid_account_url
         self.solid_pod_url = solid_pod_url
 
+    async def register_account(self) -> str:
+        """
+        Register a user account.
+
+        :return: Authorization token as a string.
+        """
+        async with aiohttp.ClientSession() as session:
+            # Get the account creation URL
+            async with session.get(self.solid_account_url) as index_response:
+                if index_response.status != 200:
+                    print(f"Failed to fetch account creation URL. Status code: {index_response.status}")
+                    return None
+                
+                index_data = await index_response.json()
+                controls = index_data['controls']
+                create_url = controls['account']['create']
+
+                # Initial POST request to create the account
+                headers = {
+                    'Content-Type': 'application/json'
+                }
+                data = {}
+
+                async with session.post(create_url, headers=headers, json=data) as response:
+                    response_data = await response.json()
+
+                    if response.status == 200:  # Adjusted based on the success response from curl
+                        authorization = response_data.get('authorization')
+                        return authorization
+                    else:
+                        return None
+        
+    async def register_password(self, authorization: str) -> tuple:
+        """
+        Registers authentication credentials.
+
+        :param authorization: Authorization token.
+        :return: Tuple containing a boolean indicating success and a dictionary with the response details.
+        """
+        async with aiohttp.ClientSession() as session:
+            async with session.get(self.solid_account_url,
+                                headers={'authorization': f'CSS-Account-Token {authorization}'}) as index_response:
+                index_data = await index_response.json()
+                controls = index_data['controls']
+            
+            password_url = controls['password']['create']
+            payload = {
+                'email': self.username,
+                'password': self.password
+            }
+            
+            async with session.post(password_url, 
+                                    headers={'content-type': 'application/json', 
+                                            'authorization': f'CSS-Account-Token {authorization}'},
+                                    data=json.dumps(payload)) as response:
+                password_data = await response.json()
+            
+            if response.status == 200:
+                return (True, {'name': 'PasswordCreated', 'message': 'Successfully created password for this e-mail address.', 'statusCode': 200, 'errorCode': None, 'details': {}})
+            else:
+                return (False, password_data)
+    
     async def login_to_account(self) -> str:
         """
         Logs into the Solid account and retrieves the authorization token.
